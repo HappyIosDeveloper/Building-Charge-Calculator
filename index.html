@@ -59,12 +59,14 @@ const FA='۰۱۲۳۴۵۶۷۸۹',AR='٠١٢٣٤٥٦٧٨٩';
 const norm=s=>String(s).replace(/[۰-۹]/g,d=>FA.indexOf(d)).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[٫،]/g,'.').replace(/[٬,\s]/g,'');
 const num=s=>{const x=parseFloat(norm(s));return isFinite(x)&&x>0?x:0};
 const fa=n=>Math.round(n).toLocaleString('fa-IR');
-const N_UNITS=150;
-const v={P:0,E:0,W:0,G:0,M:0,r:15};
-let units=Array.from({length:N_UNITS},()=>({a:0,p:0}));
-try{const s=JSON.parse(localStorage.getItem('charge150')||'null');if(s&&s.length===N_UNITS)units=s}catch(e){}
-const save=()=>{try{localStorage.setItem('charge150',JSON.stringify(units))}catch(e){}};
+const v={n:0,P:0,E:0,W:0,G:0,M:0,r:15};
+let units=[];
+try{const s=JSON.parse(localStorage.getItem('chargeUnits')||localStorage.getItem('charge150')||'null');if(s&&s.length>0)units=s}catch(e){}
+v.n=units.length;
+const save=()=>{try{localStorage.setItem('chargeUnits',JSON.stringify(units))}catch(e){}};
+const setCount=k=>{while(units.length<k)units.push({a:0,p:0});units.length=k;save()};
 const steps=[
+ {k:'n',t:'تعداد واحدها',d:'تعداد کل واحدهای ساختمان را وارد کنید (واحدهای خالی هم حساب می‌شوند). بعداً هم می‌توانید عوضش کنید.',u:'واحد'},
  {k:'P',t:'هزینه پرسنل',d:'جمع حقوق و دستمزد نگهبان، سرایدار و نظافتچی این ماه',u:'تومان'},
  {k:'E',t:'برق مشاع',d:'مبلغ قبض برق قسمت‌های مشترک ساختمان',u:'تومان'},
  {k:'W',t:'آب مشاع',d:'مبلغ قبض آب ساختمان. بین ساکنین تقسیم می‌شود.',u:'تومان'},
@@ -100,9 +102,9 @@ function render(){
     const st=steps[s],val=v[st.k];
     m.innerHTML=`<div class="card"><h1>${st.t}</h1><p>${st.d}</p>
     <input class="big" id="inp" inputmode="decimal" placeholder="۰" autocomplete="off" value="${val?(st.pct?fa(val):fa(val)):''}">
-    <div class="unit-lbl">${st.u}</div>${st.k==='W'?'<p style="margin-top:12px;font-size:15px">اگر ماه جاری هیچ ساکنی نباشد، آب صفر حساب می‌شود.</p>':''}</div>`;
+    <div class="unit-lbl">${st.u}</div><div class="err" id="err"></div>${st.k==='W'?'<p style="margin-top:12px;font-size:15px">اگر ماه جاری هیچ ساکنی نباشد، آب صفر حساب می‌شود.</p>':''}</div>`;
     const inp=$('inp');
-    inp.oninput=()=>{const x=num(inp.value);v[st.k]=x;inp.value=x?(st.pct?norm(inp.value):fa(x)):''};
+    inp.oninput=()=>{let x=num(inp.value);if(st.k==='n')x=Math.min(1000,Math.floor(x));v[st.k]=x;inp.value=x?(st.pct?norm(inp.value):fa(x)):''};
     setTimeout(()=>inp.focus(),50);
   }else if(s===steps.length){
     m.innerHTML=`<div class="card hd"><h1>اطلاعات واحدها</h1><p>متراژ و تعداد ساکنین هر واحد. واحد خالی را ۰ بگذارید. این اطلاعات روی گوشی ذخیره می‌شود.</p>
@@ -134,6 +136,7 @@ function render(){
   nav.innerHTML=(s>0?'<button class="b2" id="bk">قبلی</button>':'')+(s<last?`<button class="b1" id="nx">${s===steps.length?'محاسبه شارژ':'بعدی'}</button>`:'<button class="b1" id="rs">شروع ماه جدید</button>');
   if($('bk'))$('bk').onclick=()=>{s--;render();scrollTo(0,0)};
   if($('nx'))$('nx').onclick=()=>{
+    if(s<steps.length&&steps[s].k==='n'){if(v.n<1){$('err').textContent='تعداد واحدها را وارد کنید.';return}setCount(v.n)}
     if(s===steps.length){const A=units.reduce((x,u)=>x+u.a,0),N=units.reduce((x,u)=>x+u.p,0);
       if(A<=0){$('err').textContent='متراژ واحدها را وارد کنید.';return}
       if(v.W>0&&N<=0){$('err').textContent='آب وارد شده ولی ساکنی ثبت نشده.';return}}
