@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>محاسبه شارژ ساختمان</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#14213d;--mut:#6b7691;--pri:#2563eb;--pri2:#1d4ed8;--ok:#16a34a;--bad:#dc2626;--line:#e3e8f2;--soft:#eaf1ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#172036;--tx:#eef2fb;--mut:#9aa6c3;--pri:#4f8cff;--pri2:#3b78ee;--line:#27324d;--soft:#1c2a4a;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,system-ui,sans-serif;font-size:18px;line-height:1.7;min-height:100vh}
+.app{max-width:520px;margin:0 auto;padding:16px 16px 130px}
+.bar{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin:6px 0 18px}
+.bar i{display:block;height:100%;background:var(--pri);border-radius:8px;transition:width .3s}
+.step{font-size:15px;color:var(--mut)}
+.card{background:var(--card);border-radius:22px;padding:22px;box-shadow:0 4px 20px rgba(20,33,61,.07);margin-bottom:14px}
+h1{font-size:28px;margin:0 0 6px;font-weight:800}
+p{margin:0 0 12px;color:var(--mut)}
+.big{width:100%;font-size:38px;font-weight:800;line-height:1.3;font-family:inherit;text-align:center;padding:16px 10px;border:2px solid var(--line);border-radius:18px;background:var(--bg);color:var(--tx);direction:ltr;outline:none}
+.big:focus,.sm:focus,.mid:focus{border-color:var(--pri)}
+.unit-lbl{text-align:center;color:var(--mut);margin-top:8px;font-size:16px}
+.mid{width:100%;font-size:26px;font-weight:600;font-family:inherit;text-align:center;padding:12px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--tx);outline:none}
+.nav{position:fixed;right:0;left:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;max-width:520px;margin:0 auto}
+button{font-family:inherit;border:0;border-radius:16px;font-size:20px;font-weight:600;padding:15px;cursor:pointer}
+.b1{background:var(--pri);color:#fff;flex:2}.b1:active{background:var(--pri2)}
+.b2{background:var(--soft);color:var(--pri);flex:1}
+.b3{background:var(--soft);color:var(--pri);width:100%;margin-top:10px;font-size:18px;padding:12px}
+.err{color:var(--bad);font-size:16px;margin-top:10px;min-height:24px;text-align:center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lbl{font-size:15px;color:var(--mut);margin-bottom:4px;text-align:center}
+.sum{display:flex;justify-content:space-around;text-align:center;background:var(--soft);border-radius:16px;padding:10px;margin:12px 0}
+.sum b{display:block;font-size:24px}.sum span{font-size:14px;color:var(--mut)}
+.urow{display:grid;grid-template-columns:44px 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.urow .n{text-align:center;color:var(--mut);font-weight:600}
+.sm{width:100%;font-size:24px;font-weight:600;font-family:inherit;text-align:center;padding:9px 4px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--tx);outline:none}
+.hd{position:sticky;top:0;background:var(--card);padding:4px 0}
+textarea{width:100%;min-height:110px;font-size:20px;font-family:inherit;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--tx);padding:10px;direction:ltr}
+details summary{cursor:pointer;color:var(--pri);font-weight:600;padding:6px 0}
+.total{text-align:center}.total .v{font-size:36px;font-weight:800;color:var(--pri)}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border:0}
+.list{max-height:360px;overflow-y:auto}
+.lrow{display:flex;justify-content:space-between;padding:9px 4px;border-bottom:1px solid var(--line);font-size:17px}
+.ok{color:var(--ok);font-weight:600;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="step" id="stepTxt"></div>
+  <div class="bar"><i id="barI"></i></div>
+  <div id="main"><div class="card"><h1>در حال بارگذاری…</h1><p>اگر این پیام بیشتر از چند ثانیه می‌ماند، یعنی برنامه‌ی باز کننده‌ی فایل جاوااسکریپت را اجرا نمی‌کند. فایل را با Safari یا Chrome باز کنید.</p></div><noscript><div class="card"><h1>جاوااسکریپت غیرفعال است</h1><p>این برنامه برای کار کردن به جاوااسکریپت نیاز دارد. فایل را در Safari یا Chrome باز کنید.</p></div></noscript></div>
+</div>
+<div class="nav" id="nav"></div>
+<script>
+window.onerror=function(m,u,l,c){var e=document.getElementById('main');if(e)e.innerHTML='<div class="card"><h1>خطا</h1><p style="direction:ltr;text-align:left">'+m+' (line '+l+':'+c+')</p><p>این پیام را برای من بفرستید.</p></div>';};
+const FA='۰۱۲۳۴۵۶۷۸۹',AR='٠١٢٣٤٥٦٧٨٩';
+const norm=s=>String(s).replace(/[۰-۹]/g,d=>FA.indexOf(d)).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[٫،]/g,'.').replace(/[٬,\s]/g,'');
+const num=s=>{const x=parseFloat(norm(s));return isFinite(x)&&x>0?x:0};
+const fa=n=>Math.round(n).toLocaleString('fa-IR');
+const N_UNITS=150;
+const v={P:0,E:0,W:0,G:0,M:0,r:15};
+let units=Array.from({length:N_UNITS},()=>({a:0,p:0}));
+try{const s=JSON.parse(localStorage.getItem('charge150')||'null');if(s&&s.length===N_UNITS)units=s}catch(e){}
+const save=()=>{try{localStorage.setItem('charge150',JSON.stringify(units))}catch(e){}};
+const steps=[
+ {k:'P',t:'هزینه پرسنل',d:'جمع حقوق و دستمزد نگهبان، سرایدار و نظافتچی این ماه',u:'تومان'},
+ {k:'E',t:'برق مشاع',d:'مبلغ قبض برق قسمت‌های مشترک ساختمان',u:'تومان'},
+ {k:'W',t:'آب مشاع',d:'مبلغ قبض آب ساختمان. بین ساکنین تقسیم می‌شود.',u:'تومان'},
+ {k:'G',t:'گاز',d:'مبلغ قبض گاز ساختمان. بر اساس متراژ تقسیم می‌شود.',u:'تومان'},
+ {k:'M',t:'نگهداری و تعمیرات جاری',d:'هزینه آسانسور، پمپ، تأسیسات، تعمیرات و ...',u:'تومان'},
+ {k:'r',t:'نرخ صندوق',d:'درصدی از کل هزینه‌ها که برای صندوق ساختمان کنار گذاشته می‌شود.',u:'درصد',pct:1}
+];
+let s=0;const last=steps.length+1; // units step = steps.length, result = last
+const $=id=>document.getElementById(id);
+
+function calc(){
+  const n=units.length,A=units.reduce((x,u)=>x+u.a,0),N=units.reduce((x,u)=>x+u.p,0);
+  if(n<=0||A<=0)return{err:'مجموع متراژ باید بیشتر از صفر باشد.'};
+  if(v.W>0&&N<=0)return{err:'هزینه آب وارد شده ولی هیچ ساکنی ثبت نشده است.'};
+  const W=N>0?v.W:0;
+  const O=v.P+v.E+W+v.G+v.M,R=v.r/100*O;
+  const rows=units.map((u,i)=>{
+    const c=(v.P+v.E)/n, w=N>0?u.p*W/N:0, g=u.a*v.G/A, m=u.a*v.M/A, f=u.a*R/A;
+    return{i,c,w,g,m,f,raw:c+w+g+m+f,pay:0}});
+  rows.forEach(r=>r.pay=Math.round(r.raw));
+  const target=Math.round(O+R);
+  let big=0;units.forEach((u,i)=>{if(u.a>units[big].a)big=i});
+  const adj=target-rows.reduce((x,r)=>x+r.pay,0);
+  rows[big].pay+=adj;
+  return{rows,O,R,target,n,A,N,adj,big};
+}
+
+function render(){
+  $('barI').style.width=(s/last*100)+'%';
+  $('stepTxt').textContent=s<steps.length?`مرحله ${fa(s+1)} از ${fa(last+1)}`:s===steps.length?`مرحله ${fa(s+1)} از ${fa(last+1)}`:'نتیجه';
+  const m=$('main'),nav=$('nav');
+  if(s<steps.length){
+    const st=steps[s],val=v[st.k];
+    m.innerHTML=`<div class="card"><h1>${st.t}</h1><p>${st.d}</p>
+    <input class="big" id="inp" inputmode="decimal" placeholder="۰" autocomplete="off" value="${val?(st.pct?fa(val):fa(val)):''}">
+    <div class="unit-lbl">${st.u}</div>${st.k==='W'?'<p style="margin-top:12px;font-size:15px">اگر ماه جاری هیچ ساکنی نباشد، آب صفر حساب می‌شود.</p>':''}</div>`;
+    const inp=$('inp');
+    inp.oninput=()=>{const x=num(inp.value);v[st.k]=x;inp.value=x?(st.pct?norm(inp.value):fa(x)):''};
+    setTimeout(()=>inp.focus(),50);
+  }else if(s===steps.length){
+    m.innerHTML=`<div class="card hd"><h1>اطلاعات واحدها</h1><p>متراژ و تعداد ساکنین هر واحد. واحد خالی را ۰ بگذارید. این اطلاعات روی گوشی ذخیره می‌شود.</p>
+    <div class="sum"><div><b id="sN">۰</b><span>واحد</span></div><div><b id="sA">۰</b><span>متراژ کل</span></div><div><b id="sP">۰</b><span>ساکن کل</span></div></div>
+    <div class="lbl">پر کردن سریع برای همه واحدها</div>
+    <div class="row2"><input class="mid" id="fa" inputmode="decimal" placeholder="متراژ"><input class="mid" id="fp" inputmode="numeric" placeholder="تعداد ساکن"></div>
+    <button class="b3" id="fill">اعمال روی همه واحدها</button>
+    <details><summary>وارد کردن یکجا (کپی از اکسل)</summary><p style="font-size:15px">هر خط یک واحد: متراژ، فاصله یا ویرگول، تعداد ساکن</p><textarea id="paste" placeholder="85 3&#10;100 4&#10;70 0"></textarea><button class="b3" id="imp">وارد کردن</button></details></div>
+    <div class="card"><div class="urow"><div></div><div class="lbl">متراژ</div><div class="lbl">ساکن</div></div>
+    ${units.map((u,i)=>`<div class="urow"><div class="n">${fa(i+1)}</div><input class="sm" data-i="${i}" data-f="a" inputmode="decimal" value="${u.a?norm(u.a):''}" placeholder="۰"><input class="sm" data-i="${i}" data-f="p" inputmode="numeric" value="${u.p?u.p:''}" placeholder="۰"></div>`).join('')}</div><div class="err" id="err"></div>`;
+    const upd=()=>{$('sN').textContent=fa(units.length);$('sA').textContent=fa(units.reduce((x,u)=>x+u.a,0));$('sP').textContent=fa(units.reduce((x,u)=>x+u.p,0))};
+    upd();
+    m.querySelectorAll('.sm').forEach(e=>e.oninput=()=>{const u=units[e.dataset.i];u[e.dataset.f]=e.dataset.f==='p'?Math.floor(num(e.value)):num(e.value);save();upd()});
+    $('fill').onclick=()=>{const a=num($('fa').value),p=Math.floor(num($('fp').value));units.forEach(u=>{if(a)u.a=a;if($('fp').value!=='')u.p=p});save();render()};
+    $('imp').onclick=()=>{const L=norm0($('paste').value);L.forEach((r,i)=>{if(i<units.length){units[i].a=r[0];units[i].p=r[1]}});save();render()};
+  }else{
+    const c=calc();
+    if(c.err){m.innerHTML=`<div class="card"><h1>خطا</h1><p>${c.err}</p></div>`;}
+    else{
+      m.innerHTML=`<div class="card total"><p>جمع کل شارژ این ماه</p><div class="v">${fa(c.target)}</div><div class="unit-lbl">تومان</div><div class="ok" style="margin-top:8px">جمع پرداختی‌ها دقیقاً برابر هزینه‌هاست ✓</div></div>
+      <div class="card"><div class="kv"><span>هزینه‌های جاری</span><b>${fa(c.O)}</b></div><div class="kv"><span>سهم صندوق</span><b>${fa(c.R)}</b></div><div class="kv"><span>تعداد واحد / ساکن</span><b>${fa(c.n)} / ${fa(c.N)}</b></div><div class="kv"><span>متراژ کل</span><b>${fa(c.A)}</b></div></div>
+      <div class="card"><h1 style="font-size:22px">شارژ یک واحد</h1><input class="mid" id="q" inputmode="numeric" placeholder="شماره واحد (۱ تا ${fa(c.n)})"><div id="qr"></div></div>
+      <div class="card"><h1 style="font-size:22px">همه واحدها</h1><div class="list">${c.rows.map(r=>`<div class="lrow"><span>واحد ${fa(r.i+1)} <small style="color:var(--mut)">(${fa(units[r.i].a)}م، ${fa(units[r.i].p)}نفر)</small></span><b>${fa(r.pay)}</b></div>`).join('')}</div><button class="b3" id="cp">کپی فهرست</button></div>`;
+      $('q').oninput=()=>{const k=Math.floor(num($('q').value))-1,r=c.rows[k];
+        $('qr').innerHTML=r?`<div style="margin-top:12px"><div class="kv"><span>سهم ثابت (پرسنل و برق)</span><b>${fa(r.c)}</b></div><div class="kv"><span>آب</span><b>${fa(r.w)}</b></div><div class="kv"><span>گاز</span><b>${fa(r.g)}</b></div><div class="kv"><span>نگهداری</span><b>${fa(r.m)}</b></div><div class="kv"><span>صندوق</span><b>${fa(r.f)}</b></div><div class="total" style="margin-top:10px"><div class="v" style="font-size:30px">${fa(r.pay)} <small style="font-size:16px">تومان</small></div></div></div>`:''};
+      $('cp').onclick=()=>{const t=c.rows.map(r=>`واحد ${r.i+1}: ${r.pay}`).join('\n');try{navigator.clipboard.writeText(t);$('cp').textContent='کپی شد ✓'}catch(e){$('cp').textContent='کپی ممکن نشد'}};
+    }
+  }
+  nav.innerHTML=(s>0?'<button class="b2" id="bk">قبلی</button>':'')+(s<last?`<button class="b1" id="nx">${s===steps.length?'محاسبه شارژ':'بعدی'}</button>`:'<button class="b1" id="rs">شروع ماه جدید</button>');
+  if($('bk'))$('bk').onclick=()=>{s--;render();scrollTo(0,0)};
+  if($('nx'))$('nx').onclick=()=>{
+    if(s===steps.length){const A=units.reduce((x,u)=>x+u.a,0),N=units.reduce((x,u)=>x+u.p,0);
+      if(A<=0){$('err').textContent='متراژ واحدها را وارد کنید.';return}
+      if(v.W>0&&N<=0){$('err').textContent='آب وارد شده ولی ساکنی ثبت نشده.';return}}
+    s++;render();scrollTo(0,0)};
+  if($('rs'))$('rs').onclick=()=>{Object.assign(v,{P:0,E:0,W:0,G:0,M:0,r:15});s=0;render();scrollTo(0,0)};
+}
+function norm0(t){return t.split('\n').map(l=>norm(l.replace(/[,\t،]/g,' ').trim().replace(/\s+/g,'|')).split('|').map(x=>parseFloat(x)||0)).filter(r=>r.length>=1&&(r[0]||r[1])).map(r=>[r[0]||0,Math.floor(r[1]||0)])}
+render();
+</script>
+</body>
+</html>
