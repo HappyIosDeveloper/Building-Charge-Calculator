@@ -53,6 +53,7 @@ details summary{cursor:pointer;color:var(--pri);font-weight:600;padding:6px 0}
 .mh{display:flex;justify-content:space-between;font-size:20px}
 .mf{color:var(--pri);font-size:16px;margin:2px 0}
 .mx{font-size:15px;color:var(--mut)}
+.fb{display:block;width:100%;background:none;border:2px dashed var(--line);color:var(--pri);font-size:18px;padding:14px;margin-top:6px}
 .ok{color:var(--ok);font-weight:600;text-align:center}
 </style>
 </head>
@@ -123,7 +124,7 @@ function render(){
     <div class="unit-lbl">${st.u}</div><div class="err" id="err"></div>${st.k==='W'?'<p style="margin-top:12px;font-size:15px">اگر ماه جاری هیچ ساکنی نباشد، آب صفر حساب می‌شود.</p>':''}</div>`;
     const inp=$('inp');
     inp.oninput=()=>{let x=num(inp.value);if(st.k==='n')x=Math.min(1000,Math.floor(x));v[st.k]=x;inp.value=x?(st.pct?norm(inp.value):fa(x)):''};
-    if(st.choice){m.innerHTML=`<div class="card"><h1>${st.t}</h1><p>${st.d}</p>${st.choice.map(o=>`<button class="opt${v[st.k]===o[0]?' on':''}" data-v="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div>`;m.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{v[st.k]=b.dataset.v;render()});}else setTimeout(()=>inp.focus(),50);
+    if(st.choice){m.innerHTML=`<div class="card"><h1>${st.t}</h1><p>${st.d}</p>${st.choice.map(o=>`<button class="opt${v[st.k]===o[0]?' on':''}" data-v="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div><button class="fb" id="fbtn">نمایش فرمول محاسبه شارژ</button>`;m.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{v[st.k]=b.dataset.v;render()});$('fbtn').onclick=formulaInfo;}else setTimeout(()=>inp.focus(),50);
   }else if(s===steps.length){
     m.innerHTML=`<div class="card hd"><h1>اطلاعات واحدها</h1><p>متراژ و تعداد ساکنین هر واحد. واحد خالی را ۰ بگذارید. این اطلاعات روی گوشی ذخیره می‌شود.</p>
     <div class="sum"><div><b id="sN">۰</b><span>واحد</span></div><div><b id="sA">۰</b><span>متراژ کل</span></div><div><b id="sP">۰</b><span>ساکن کل</span></div></div>
@@ -177,6 +178,25 @@ function info(c,i){
  <div class="mi"><div class="mh"><span>جمع دقیق همه‌ی سهم‌ها</span><b>${fa(r.raw)}</b></div><div class="mx">جزء‌ها جدا گرد نمی‌شوند؛ اول جمع دقیق حساب می‌شود و بعد تا تومان گرد می‌شود. به همین خاطر جمع اعداد بالا ممکن است یک‌دو تومان با مبلغ نهایی فرق داشته باشد.</div></div>
  ${adj?`<div class="mi"><div class="mh"><span>تعدیل رند</span><b>${adj>0?'+':'−'}${fa(Math.abs(adj))}</b></div><div class="mx">اختلاف جمع رندشده‌ها با جمع هزینه‌ها روی واحد با بیشترین متراژ می‌نشیند تا جمع پرداختی‌ها دقیقاً برابر هزینه‌ها شود. این واحد بزرگ‌ترین متراژ را دارد.</div></div>`:''}
  <div class="total" style="margin-top:14px"><p style="margin:0">شارژ نهایی</p><div class="v">${fa(r.pay)}</div><div class="unit-lbl">تومان</div></div></div>`;
+ const ov=document.createElement('div');ov.className='ov';ov.innerHTML=h;document.body.appendChild(ov);
+ document.body.style.overflow='hidden';
+ const close=()=>{ov.remove();document.body.style.overflow='';document.removeEventListener('keydown',esc)};
+ const esc=e=>{if(e.key==='Escape')close()};
+ document.addEventListener('keydown',esc);
+ ov.onclick=e=>{if(e.target===ov)close()};
+ ov.querySelector('#mclose').onclick=close;
+}
+function formulaInfo(){
+ const row=(t,x)=>`<div class="mi"><b style="font-size:20px">${t}</b><div style="font-size:17px;color:var(--mut)">${x}</div></div>`;
+ const h=`<div class="mbox"><div class="mt"><h1 style="margin:0">فرمول محاسبه شارژ</h1><button class="mc" id="mclose">×</button></div>
+ <p style="margin-top:10px">شارژ هر واحد، جمع چند سهم است:</p>
+ ${row('پرسنل','مساوی بین همه‌ی واحدها، حتی واحد خالی.')}
+ ${row('برق','بر اساس متراژ (یا مساوی بین واحدها، اگر همین را انتخاب کنید).')}
+ ${row('آب','فقط بین ساکنین، به نسبت تعداد نفرات. واحد خالی آب نمی‌دهد.')}
+ ${row('گاز و نگهداری','به نسبت متراژ. واحد خالی هم می‌پردازد.')}
+ ${row('صندوق','درصدی از کل هزینه‌ها که به نسبت متراژ تقسیم می‌شود. اگر نرخ صفر باشد، حساب نمی‌شود.')}
+ <div class="mi"><b style="font-size:20px">یک مثال</b><div style="font-size:17px;color:var(--mut)">اگر متراژ ساختمان ۱۰٬۰۰۰ متر و قبض گاز ۱۰۰ میلیون باشد، واحد ۱۰۰ متری ۱٪ آن را می‌دهد: یک میلیون تومان.</div></div>
+ <p style="margin-top:12px;font-size:16px">در پایان، مبلغ هر واحد تا تومان گرد می‌شود و اختلاف جزئی روی واحد با بیشترین متراژ می‌نشیند تا جمع پرداختی‌ها دقیقاً برابر هزینه‌ها شود.</p></div>`;
  const ov=document.createElement('div');ov.className='ov';ov.innerHTML=h;document.body.appendChild(ov);
  document.body.style.overflow='hidden';
  const close=()=>{ov.remove();document.body.style.overflow='';document.removeEventListener('keydown',esc)};
