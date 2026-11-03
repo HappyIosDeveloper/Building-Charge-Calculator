@@ -32,8 +32,9 @@ button{font-family:inherit;border:0;border-radius:16px;font-size:20px;font-weigh
 .lbl{font-size:15px;color:var(--mut);margin-bottom:4px;text-align:center}
 .sum{display:flex;justify-content:space-around;text-align:center;background:var(--soft);border-radius:16px;padding:10px;margin:12px 0}
 .sum b{display:block;font-size:24px}.sum span{font-size:14px;color:var(--mut)}
-.urow{display:grid;grid-template-columns:44px 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
-.urow .n{text-align:center;color:var(--mut);font-weight:600}
+.urow{display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;align-items:center;margin-bottom:8px}
+.urow .n{text-align:center;color:var(--mut);font-weight:600;line-height:1.3}.urow .n small{display:block;font-size:13px;font-weight:400}
+.opt{display:block;width:100%;text-align:right;background:var(--bg);color:var(--tx);border:2px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;font-weight:400}.opt.on{border-color:var(--pri);background:var(--soft)}.opt b{font-size:21px;display:block}.opt span{font-size:15px;color:var(--mut)}
 .sm{width:100%;font-size:24px;font-weight:600;font-family:inherit;text-align:center;padding:9px 4px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--tx);outline:none}
 .hd{position:sticky;top:0;background:var(--card);padding:4px 0}
 textarea{width:100%;min-height:110px;font-size:20px;font-family:inherit;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--tx);padding:10px;direction:ltr}
@@ -68,13 +69,21 @@ const FA='۰۱۲۳۴۵۶۷۸۹',AR='٠١٢٣٤٥٦٧٨٩';
 const norm=s=>String(s).replace(/[۰-۹]/g,d=>FA.indexOf(d)).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[٫،]/g,'.').replace(/[٬,\s]/g,'');
 const num=s=>{const x=parseFloat(norm(s));return isFinite(x)&&x>0?x:0};
 const fa=n=>Math.round(n).toLocaleString('fa-IR');
-const v={n:0,P:0,E:0,W:0,G:0,M:0,r:15};
-let units=[];
-try{const s=JSON.parse(localStorage.getItem('chargeUnits')||localStorage.getItem('charge150')||'null');if(s&&s.length>0)units=s}catch(e){}
+const DEFV={n:0,P:200000000,E:120000000,W:130000000,G:90000000,M:20000000,r:0,em:'a'};
+const v=Object.assign({},DEFV);
+const BL=['شمالی','جنوبی'];
+const DEF="101,0,138,3;102,0,168,4;103,0,129,3;104,0,134,2;105,0,171,3;106,0,171,4;107,0,134,2;108,0,129,5;109,0,168,3;110,0,138,4;201,0,138,4;202,0,113,3;203,0,104,2;204,0,121,2;205,0,131,4;206,0,124,2;207,0,94,4;208,0,94,4;209,0,124,2;210,0,131,3;211,0,121,2;212,0,104,4;213,0,113,3;214,0,138,2;301,0,115,2;302,0,113,5;303,0,160,4;304,0,58,1;305,0,100,6;306,0,120,4;307,0,113,5;308,0,115,4;401,0,115,4;402,0,113,3;403,0,120,3;404,0,100,2;405,0,100,2;406,0,120,1;407,0,113,3;408,0,115,3;501,0,115,3;502,0,113,4;503,0,120,2;504,0,100,3;505,0,100,3;506,0,120,1;507,0,113,2;508,0,115,5;601,0,115,3;602,0,113,3;603,0,120,4;604,0,110,3;605,0,110,2;606,0,120,3;607,0,113,2;608,0,115,4;701,0,115,5;702,0,113,2;703,0,120,4;704,0,100,4;705,0,100,5;706,0,120,3;707,0,113,3;708,0,115,3;801,0,115,4;802,0,113,2;803,0,120,2;804,0,100,4;805,0,100,3;806,0,120,3;807,0,113,3;808,0,115,3;901,0,115,4;902,0,113,3;903,0,120,3;904,0,100,4;905,0,100,3;906,0,120,1;907,0,113,4;908,0,115,5;201,1,138,3;202,1,104,4;203,1,96,2;204,1,104,5;205,1,135,3;206,1,124,3;207,1,91,4;208,1,91,3;209,1,124,4;210,1,135,3;211,1,106,2;212,1,104,4;213,1,113,3;214,1,140,3;301,1,115,3;302,1,113,1;303,1,120,4;304,1,100,5;305,1,100,2;306,1,120,3;307,1,113,2;308,1,115,1;401,1,115,4;402,1,113,3;403,1,120,3;404,1,100,3;405,1,100,2;406,1,120,5;407,1,113,4;408,1,115,2;501,1,115,3;502,1,113,4;503,1,120,2;504,1,100,3;505,1,100,3;506,1,120,2;507,1,113,4;508,1,115,3;601,1,115,5;602,1,113,5;603,1,120,2;604,1,100,4;605,1,100,4;606,1,120,3;607,1,113,3;608,1,115,3;701,1,115,3;702,1,113,3;703,1,120,4;704,1,100,4;705,1,100,1;706,1,120,2;707,1,113,3;708,1,115,2;801,1,115,0;802,1,113,4;803,1,120,3;804,1,100,0;805,1,100,2;806,1,120,4;807,1,113,2;808,1,115,2;901,1,115,3;902,1,113,2;903,1,120,4;904,1,100,0;905,1,100,1;906,1,120,2;907,1,113,3;908,1,115,3;100,1,60,2";
+const defUnits=()=>DEF.split(';').map(x=>{const q=x.split(',');return{l:q[0],b:+q[1],a:+q[2],p:+q[3]}});
+const pd=x=>String(x).replace(/\d/g,d=>FA[d]);
+let units=defUnits();
+try{const s=JSON.parse(localStorage.getItem('chargeUnits2')||'null');if(s&&s.length>0)units=s}catch(e){}
 v.n=units.length;
-const save=()=>{try{localStorage.setItem('chargeUnits',JSON.stringify(units))}catch(e){}};
-const setCount=k=>{while(units.length<k)units.push({a:0,p:0});units.length=k;save()};
+const save=()=>{try{localStorage.setItem('chargeUnits2',JSON.stringify(units))}catch(e){}};
+const setCount=k=>{while(units.length<k)units.push({a:0,p:0,l:'',b:-1});units.length=k;save()};
+const uname=i=>{const u=units[i];return 'واحد '+pd(u.l||i+1)+(u.b>=0?' '+BL[u.b]:'')};
+const ulabel=(u,i)=>'<b>'+pd(u.l||i+1)+'</b>'+(u.b>=0?'<small>'+BL[u.b]+'</small>':'');
 const steps=[
+ {k:'em',t:'روش تقسیم هزینه برق',d:'هزینه برق مشاع چطور بین واحدها تقسیم شود؟ گاز، نگهداری و صندوق همیشه بر اساس متراژ است.',choice:[['a','بر اساس متراژ','واحدهای بزرگ‌تر سهم بیشتری می‌دهند (پیش‌فرض)'],['u','مساوی بین همه واحدها','هر واحد سهم برابر می‌دهد، حتی واحد خالی']]},
  {k:'n',t:'تعداد واحدها',d:'تعداد کل واحدهای ساختمان را وارد کنید (واحدهای خالی هم حساب می‌شوند). بعداً هم می‌توانید عوضش کنید.',u:'واحد'},
  {k:'P',t:'هزینه پرسنل',d:'جمع حقوق و دستمزد نگهبان، سرایدار و نظافتچی این ماه',u:'تومان'},
  {k:'E',t:'برق مشاع',d:'مبلغ قبض برق قسمت‌های مشترک ساختمان',u:'تومان'},
@@ -93,8 +102,8 @@ function calc(){
   const W=N>0?v.W:0;
   const O=v.P+v.E+W+v.G+v.M,R=v.r/100*O;
   const rows=units.map((u,i)=>{
-    const c=(v.P+v.E)/n, w=N>0?u.p*W/N:0, g=u.a*v.G/A, m=u.a*v.M/A, f=u.a*R/A;
-    return{i,c,w,g,m,f,raw:c+w+g+m+f,pay:0}});
+    const c=v.P/n, e=v.em==='u'?v.E/n:u.a*v.E/A, w=N>0?u.p*W/N:0, g=u.a*v.G/A, m=u.a*v.M/A, f=u.a*R/A;
+    return{i,c,e,w,g,m,f,raw:c+e+w+g+m+f,pay:0}});
   rows.forEach(r=>r.pay=Math.round(r.raw));
   const target=Math.round(O+R);
   let big=0;units.forEach((u,i)=>{if(u.a>units[big].a)big=i});
@@ -114,7 +123,7 @@ function render(){
     <div class="unit-lbl">${st.u}</div><div class="err" id="err"></div>${st.k==='W'?'<p style="margin-top:12px;font-size:15px">اگر ماه جاری هیچ ساکنی نباشد، آب صفر حساب می‌شود.</p>':''}</div>`;
     const inp=$('inp');
     inp.oninput=()=>{let x=num(inp.value);if(st.k==='n')x=Math.min(1000,Math.floor(x));v[st.k]=x;inp.value=x?(st.pct?norm(inp.value):fa(x)):''};
-    setTimeout(()=>inp.focus(),50);
+    if(st.choice){m.innerHTML=`<div class="card"><h1>${st.t}</h1><p>${st.d}</p>${st.choice.map(o=>`<button class="opt${v[st.k]===o[0]?' on':''}" data-v="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div>`;m.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{v[st.k]=b.dataset.v;render()});}else setTimeout(()=>inp.focus(),50);
   }else if(s===steps.length){
     m.innerHTML=`<div class="card hd"><h1>اطلاعات واحدها</h1><p>متراژ و تعداد ساکنین هر واحد. واحد خالی را ۰ بگذارید. این اطلاعات روی گوشی ذخیره می‌شود.</p>
     <div class="sum"><div><b id="sN">۰</b><span>واحد</span></div><div><b id="sA">۰</b><span>متراژ کل</span></div><div><b id="sP">۰</b><span>ساکن کل</span></div></div>
@@ -123,7 +132,7 @@ function render(){
     <button class="b3" id="fill">اعمال روی همه واحدها</button>
     <details><summary>وارد کردن یکجا (کپی از اکسل)</summary><p style="font-size:15px">هر خط یک واحد: متراژ، فاصله یا ویرگول، تعداد ساکن</p><textarea id="paste" placeholder="85 3&#10;100 4&#10;70 0"></textarea><button class="b3" id="imp">وارد کردن</button></details></div>
     <div class="card"><div class="urow"><div></div><div class="lbl">متراژ</div><div class="lbl">ساکن</div></div>
-    ${units.map((u,i)=>`<div class="urow"><div class="n">${fa(i+1)}</div><input class="sm" data-i="${i}" data-f="a" inputmode="decimal" value="${u.a?norm(u.a):''}" placeholder="۰"><input class="sm" data-i="${i}" data-f="p" inputmode="numeric" value="${u.p?u.p:''}" placeholder="۰"></div>`).join('')}</div><div class="err" id="err"></div>`;
+    ${units.map((u,i)=>`<div class="urow"><div class="n">${ulabel(u,i)}</div><input class="sm" data-i="${i}" data-f="a" inputmode="decimal" value="${u.a?norm(u.a):''}" placeholder="۰"><input class="sm" data-i="${i}" data-f="p" inputmode="numeric" value="${u.p?u.p:''}" placeholder="۰"></div>`).join('')}</div><div class="err" id="err"></div>`;
     const upd=()=>{$('sN').textContent=fa(units.length);$('sA').textContent=fa(units.reduce((x,u)=>x+u.a,0));$('sP').textContent=fa(units.reduce((x,u)=>x+u.p,0))};
     upd();
     m.querySelectorAll('.sm').forEach(e=>e.oninput=()=>{const u=units[e.dataset.i];u[e.dataset.f]=e.dataset.f==='p'?Math.floor(num(e.value)):num(e.value);save();upd()});
@@ -135,11 +144,10 @@ function render(){
     else{
       m.innerHTML=`<div class="card total"><p>جمع کل شارژ این ماه</p><div class="v">${fa(c.target)}</div><div class="unit-lbl">تومان</div><div class="ok" style="margin-top:8px">جمع پرداختی‌ها دقیقاً برابر هزینه‌هاست ✓</div></div>
       <div class="card"><div class="kv"><span>هزینه‌های جاری</span><b>${fa(c.O)}</b></div><div class="kv"><span>سهم صندوق</span><b>${fa(c.R)}</b></div><div class="kv"><span>تعداد واحد / ساکن</span><b>${fa(c.n)} / ${fa(c.N)}</b></div><div class="kv"><span>متراژ کل</span><b>${fa(c.A)}</b></div></div>
-      <div class="card"><h1 style="font-size:22px">شارژ یک واحد</h1><input class="mid" id="q" inputmode="numeric" placeholder="شماره واحد (۱ تا ${fa(c.n)})"><div id="qr"></div></div>
-      <div class="card"><h1 style="font-size:22px">همه واحدها</h1><div class="list">${c.rows.map(r=>`<div class="lrow"><span style="display:flex;align-items:center;gap:10px"><button class="ib" data-i="${r.i}" aria-label="info">i</button><span>واحد ${fa(r.i+1)} <small style="color:var(--mut)">(${fa(units[r.i].a)}م، ${fa(units[r.i].p)}نفر)</small></span></span><b>${fa(r.pay)}</b></div>`).join('')}</div><button class="b3" id="cp">کپی فهرست</button></div>`;
+      <div class="card"><h1 style="font-size:22px">جستجوی واحد</h1><input class="mid" id="q" inputmode="numeric" placeholder="شماره واحد (مثلاً ۲۰۱)"><div id="qr"></div></div>
+      <div class="card"><h1 style="font-size:22px">همه واحدها</h1><div class="list">${c.rows.map(r=>`<div class="lrow"><span style="display:flex;align-items:center;gap:10px"><button class="ib" data-i="${r.i}" aria-label="info">i</button><span>${uname(r.i)} <small style="color:var(--mut)">(${fa(units[r.i].a)}م، ${fa(units[r.i].p)}نفر)</small></span></span><b>${fa(r.pay)}</b></div>`).join('')}</div><button class="b3" id="cp">کپی فهرست</button></div>`;
       m.querySelectorAll('.ib').forEach(b=>b.onclick=()=>info(c,+b.dataset.i));
-      $('q').oninput=()=>{const k=Math.floor(num($('q').value))-1,r=c.rows[k];
-        $('qr').innerHTML=r?`<div style="margin-top:12px"><div class="kv"><span>سهم ثابت (پرسنل و برق)</span><b>${fa(r.c)}</b></div><div class="kv"><span>آب</span><b>${fa(r.w)}</b></div><div class="kv"><span>گاز</span><b>${fa(r.g)}</b></div><div class="kv"><span>نگهداری</span><b>${fa(r.m)}</b></div><div class="kv"><span>صندوق</span><b>${fa(r.f)}</b></div><div class="total" style="margin-top:10px"><div class="v" style="font-size:30px">${fa(r.pay)} <small style="font-size:16px">تومان</small></div></div></div>`:''};
+      $('q').oninput=()=>{const t=norm($('q').value);const hits=t?c.rows.filter(r=>{const l=units[r.i].l||String(r.i+1);return l===t||l.startsWith(t)}).slice(0,8):[];$('qr').innerHTML=hits.map(r=>`<div class="lrow"><span style="display:flex;align-items:center;gap:10px"><button class="ib" data-i="${r.i}">i</button><span>${uname(r.i)}</span></span><b>${fa(r.pay)}</b></div>`).join('');$('qr').querySelectorAll('.ib').forEach(b=>b.onclick=()=>info(c,+b.dataset.i))};
       $('cp').onclick=()=>{const t=c.rows.map(r=>`واحد ${r.i+1}: ${r.pay}`).join('\n');try{navigator.clipboard.writeText(t);$('cp').textContent='کپی شد ✓'}catch(e){$('cp').textContent='کپی ممکن نشد'}};
     }
   }
@@ -151,22 +159,24 @@ function render(){
       if(A<=0){$('err').textContent='متراژ واحدها را وارد کنید.';return}
       if(v.W>0&&N<=0){$('err').textContent='آب وارد شده ولی ساکنی ثبت نشده.';return}}
     s++;render();scrollTo(0,0)};
-  if($('rs'))$('rs').onclick=()=>{Object.assign(v,{P:0,E:0,W:0,G:0,M:0,r:15});s=0;render();scrollTo(0,0)};
+  if($('rs'))$('rs').onclick=()=>{Object.assign(v,DEFV,{n:units.length});s=0;render();scrollTo(0,0)};
 }
 function info(c,i){
  const r=c.rows[i],u=units[i],W=c.N>0?v.W:0,adj=i===c.big?c.adj:0;
  const fn=x=>x.toLocaleString('fa-IR',{maximumFractionDigits:2});
  const item=(t,f,val,x)=>`<div class="mi"><div class="mh"><b>${t}</b><b>${fa(val)}</b></div><div class="mf">${f}</div><div class="mx">${x}</div></div>`;
- const h=`<div class="mbox"><div class="mt"><h1 style="margin:0">واحد ${fa(i+1)}</h1><button class="mc" id="mclose">×</button></div>
+ const eq=v.em==='u';
+ const h=`<div class="mbox"><div class="mt"><h1 style="margin:0">${uname(i)}</h1><button class="mc" id="mclose">×</button></div>
  <p>متراژ <b>${fn(u.a)}</b> متر · ساکنین <b>${fa(u.p)}</b> نفر${u.p?'':' (خالی)'}</p>
- ${item('سهم ثابت (پرسنل و برق)',`(${fa(v.P)} + ${fa(v.E)}) ÷ ${fa(c.n)} واحد`,r.c,'هزینه‌ی پرسنل و برق مشاع بین همه‌ی واحدها مساوی تقسیم می‌شود، حتی واحد خالی.')}
+ ${item('پرسنل',`${fa(v.P)} ÷ ${fa(c.n)} واحد`,r.c,'هزینه‌ی پرسنل بین همه‌ی واحدها مساوی تقسیم می‌شود، حتی واحد خالی.')}
+ ${item('برق مشاع',eq?`${fa(v.E)} ÷ ${fa(c.n)} واحد`:`${fn(u.a)} متر × (${fa(v.E)} ÷ ${fn(c.A)} متر)`,r.e,eq?'برق مشاع بین همه‌ی واحدها مساوی تقسیم می‌شود، حتی واحد خالی.':'برق مشاع بر اساس متراژ تقسیم می‌شود. واحد خالی هم می‌پردازد.')}
  ${item('آب',`${fa(u.p)} نفر × (${fa(W)} ÷ ${fa(c.N)} نفر)`,r.w,'فقط بین ساکنین تقسیم می‌شود. هر نفر سهم یکسان دارد و واحد خالی آب نمی‌دهد.')}
  ${item('گاز',`${fn(u.a)} متر × (${fa(v.G)} ÷ ${fn(c.A)} متر)`,r.g,'بر اساس متراژ تقسیم می‌شود. واحد خالی هم می‌پردازد.')}
  ${item('نگهداری و تعمیرات',`${fn(u.a)} متر × (${fa(v.M)} ÷ ${fn(c.A)} متر)`,r.m,'هزینه‌ی نگهداری جاری بر اساس متراژ تقسیم می‌شود.')}
  ${item('صندوق',`${fn(u.a)} متر × (${fa(c.R)} ÷ ${fn(c.A)} متر)`,r.f,`صندوق می‌شود ${v.r.toLocaleString('fa-IR')}٪ از کل هزینه‌های جاری (${fa(c.O)} تومان) = ${fa(c.R)} تومان، که بر اساس متراژ تقسیم می‌شود.`)}
  <div class="mi"><div class="mh"><span>جمع دقیق همه‌ی سهم‌ها</span><b>${fa(r.raw)}</b></div><div class="mx">جزء‌ها جدا گرد نمی‌شوند؛ اول جمع دقیق حساب می‌شود و بعد تا تومان گرد می‌شود. به همین خاطر جمع اعداد بالا ممکن است یک‌دو تومان با مبلغ نهایی فرق داشته باشد.</div></div>
  ${adj?`<div class="mi"><div class="mh"><span>تعدیل رند</span><b>${adj>0?'+':'−'}${fa(Math.abs(adj))}</b></div><div class="mx">اختلاف جمع رندشده‌ها با جمع هزینه‌ها روی واحد با بیشترین متراژ می‌نشیند تا جمع پرداختی‌ها دقیقاً برابر هزینه‌ها شود. این واحد بزرگ‌ترین متراژ را دارد.</div></div>`:''}
- <div class="total" style="margin-top:14px"><p style="margin:0">شارج نهایی</p><div class="v">${fa(r.pay)}</div><div class="unit-lbl">تومان</div></div></div>`;
+ <div class="total" style="margin-top:14px"><p style="margin:0">شارژ نهایی</p><div class="v">${fa(r.pay)}</div><div class="unit-lbl">تومان</div></div></div>`;
  const ov=document.createElement('div');ov.className='ov';ov.innerHTML=h;document.body.appendChild(ov);
  document.body.style.overflow='hidden';
  const close=()=>{ov.remove();document.body.style.overflow='';document.removeEventListener('keydown',esc)};
